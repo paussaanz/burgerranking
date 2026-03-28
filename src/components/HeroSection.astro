@@ -1,0 +1,216 @@
+---
+interface Props {
+  count: number;
+}
+const { count } = Astro.props;
+---
+
+<section class="hero" aria-label="Bienvenida a BurgerRank Madrid">
+  <!-- Dot pattern SVG background -->
+  <svg class="hero-pattern" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <pattern id="dots" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+        <circle cx="2" cy="2" r="1.5" fill="#ff3c00" opacity="0.15" />
+      </pattern>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#dots)" />
+  </svg>
+
+  <div class="container hero-inner">
+    <div class="hero-content">
+      <p class="hero-eyebrow">Madrid · {new Date().getFullYear()}</p>
+      <h1 class="hero-headline">
+        Las mejores<br />hamburguesas<br />de Madrid,<br />
+        <span class="hero-headline-accent">rankeadas<br />sin piedad.</span>
+      </h1>
+      <p class="hero-subtitle">
+        <strong>{count}</strong> hamburgueserías analizadas · Ratings honestos · Cero patrocinos
+      </p>
+
+      <form class="hero-search" role="search" id="hero-search-form">
+        <label for="search-input" class="sr-only">Buscar hamburguesería</label>
+        <input
+          type="search"
+          id="search-input"
+          name="q"
+          placeholder="Busca por nombre, barrio o tipo..."
+          class="search-input"
+          autocomplete="off"
+        />
+        <button type="submit" class="search-btn" aria-label="Buscar">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
+        </button>
+      </form>
+    </div>
+
+    <div class="hero-deco" aria-hidden="true">
+      <span class="hero-big-num">10</span>
+      <span class="hero-label">/ 10</span>
+    </div>
+  </div>
+</section>
+
+<script>
+  const form = document.getElementById('hero-search-form') as HTMLFormElement;
+  const input = document.getElementById('search-input') as HTMLInputElement;
+
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const q = input.value.trim().toLowerCase();
+    // Dispatch custom event for FilterBar React island to pick up
+    window.dispatchEvent(new CustomEvent('burgerSearch', { detail: { query: q } }));
+    // Scroll to grid
+    document.getElementById('burger-grid')?.scrollIntoView({ behavior: 'smooth' });
+  });
+</script>
+
+<style>
+  .hero {
+    position: relative;
+    overflow: hidden;
+    padding-block: var(--space-3xl) var(--space-2xl);
+    border-bottom: var(--border-width-thick) solid var(--color-accent);
+  }
+
+  .hero-pattern {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .hero-inner {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: var(--space-2xl);
+  }
+
+  .hero-eyebrow {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    margin-bottom: var(--space-md);
+  }
+
+  .hero-headline {
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 8vw, 7rem);
+    line-height: 0.95;
+    letter-spacing: 0.02em;
+    color: var(--color-text);
+    margin-bottom: var(--space-xl);
+  }
+
+  .hero-headline-accent {
+    color: var(--color-accent);
+  }
+
+  .hero-subtitle {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-xl);
+    letter-spacing: 0.04em;
+  }
+
+  .hero-subtitle strong {
+    color: var(--color-accent-alt);
+    font-size: 1.1rem;
+  }
+
+  /* Search */
+  .hero-search {
+    display: flex;
+    max-width: 480px;
+    border: var(--border-width) solid var(--color-accent);
+  }
+
+  .search-input {
+    flex: 1;
+    background: rgba(255, 60, 0, 0.06);
+    border: none;
+    padding: 12px 16px;
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    outline: none;
+  }
+
+  .search-input::placeholder {
+    color: var(--color-text-muted);
+  }
+
+  .search-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 16px;
+    background: var(--color-accent);
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+  }
+
+  .search-btn:hover {
+    background: #cc3000;
+  }
+
+  /* Decorative number */
+  .hero-deco {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1;
+    opacity: 0.12;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .hero-big-num {
+    font-family: var(--font-display);
+    font-size: clamp(8rem, 18vw, 20rem);
+    color: var(--color-accent);
+    letter-spacing: -0.02em;
+  }
+
+  .hero-label {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 5vw, 5rem);
+    color: var(--color-accent-alt);
+    align-self: flex-end;
+    margin-top: -0.5em;
+  }
+
+  /* Screen reader only */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  @media (max-width: 768px) {
+    .hero-inner {
+      grid-template-columns: 1fr;
+    }
+    .hero-deco {
+      display: none;
+    }
+    .hero-search {
+      max-width: 100%;
+    }
+  }
+</style>

@@ -1,0 +1,77 @@
+backend:
+  name: git-gateway
+  branch: main
+
+# Activa el backend local para desarrollo (requiere `npx decap-server` en otra terminal)
+local_backend: true
+
+media_folder: public/images/burgers
+public_folder: /images/burgers
+
+locale: es
+
+collections:
+  - name: burgers
+    label: Hamburgueserías
+    label_singular: Hamburguesería
+    folder: src/content/burgers
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: Nombre, name: nombre, widget: string }
+      - { label: Slug, name: slug, widget: string, hint: "URL amigable sin espacios ni acentos" }
+      - { label: Descripción corta, name: descripcion, widget: text }
+      - { label: Dirección, name: direccion, widget: string }
+      - label: Barrio
+        name: barrio
+        widget: select
+        options:
+          - Malasaña
+          - Lavapiés
+          - Chueca
+          - Salamanca
+          - Chamberí
+          - Almagro
+          - Retiro
+          - Carabanchel
+          - Vallecas
+          - Moncloa
+          - Centro
+          - Otro
+      - label: Rango de precio
+        name: precio_rango
+        widget: select
+        options:
+          - label: "€ (menos de 12€)"
+            value: "€"
+          - label: "€€ (12–20€)"
+            value: "€€"
+          - label: "€€€ (más de 20€)"
+            value: "€€€"
+      - { label: Web, name: web, widget: string, required: false }
+      - { label: Instagram, name: instagram, widget: string, required: false }
+      - { label: Foto portada, name: foto_portada, widget: image }
+      - label: Fotos galería
+        name: fotos_galeria
+        widget: list
+        required: false
+        field:
+          label: Foto
+          name: foto
+          widget: image
+      - label: Rating general (0–10)
+        name: rating_general
+        widget: number
+        value_type: float
+        min: 0
+        max: 10
+        step: 0.1
+      - { label: Rating carne (0–10), name: rating_carne, widget: number, min: 0, max: 10 }
+      - { label: Rating pan (0–10), name: rating_pan, widget: number, min: 0, max: 10 }
+      - { label: Rating salsa (0–10), name: rating_salsa, widget: number, min: 0, max: 10 }
+      - { label: "Rating precio/calidad (0–10)", name: rating_precio_calidad, widget: number, min: 0, max: 10 }
+      - { label: Rating ambiente (0–10), name: rating_ambiente, widget: number, min: 0, max: 10 }
+      - { label: Hamburguesa estrella, name: hamburguesa_estrella, widget: string }
+      - { label: Fecha visita, name: fecha_visita, widget: datetime, date_format: "YYYY-MM-DD", time_format: false }
+      - { label: Tags, name: tags, widget: list }
+      - { label: Reseña completa, name: body, widget: markdown }

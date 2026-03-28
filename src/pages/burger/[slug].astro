@@ -1,0 +1,546 @@
+---
+import Layout from '../../components/Layout.astro';
+import RatingDisplay from '../../components/RatingDisplay';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const burgers = await getCollection('burgers');
+  return burgers.map((b) => ({
+    params: { slug: b.slug },
+    props: { burger: b },
+  }));
+}
+
+const { burger } = Astro.props;
+const { Content } = await burger.render();
+const d = burger.data;
+
+const ratings = [
+  { label: 'Carne', value: d.rating_carne, icon: '🥩' },
+  { label: 'Pan', value: d.rating_pan, icon: '🍞' },
+  { label: 'Salsa', value: d.rating_salsa, icon: '🫙' },
+  { label: 'Precio/Calidad', value: d.rating_precio_calidad, icon: '💰' },
+  { label: 'Ambiente', value: d.rating_ambiente, icon: '✨' },
+];
+---
+
+<Layout title={d.nombre} description={d.descripcion}>
+  <!-- Hero -->
+  <section class="detail-hero" aria-label={`Foto de portada de ${d.nombre}`}>
+    {d.foto_portada ? (
+      <img
+        src={d.foto_portada}
+        alt={`Foto de portada de ${d.nombre}`}
+        width="1600"
+        height="900"
+        class="hero-img"
+        loading="eager"
+        decoding="async"
+      />
+    ) : (
+      <div class="hero-placeholder" aria-hidden="true">🍔</div>
+    )}
+    <div class="hero-overlay" aria-hidden="true"></div>
+
+    <!-- Rating backdrop number -->
+    <div class="hero-rating-backdrop" aria-hidden="true">{d.rating_general.toFixed(1)}</div>
+
+    <!-- Hero text -->
+    <div class="hero-text container">
+      <nav class="breadcrumb" aria-label="Navegación de ruta">
+        <a href="/">Rankings</a>
+        <span aria-hidden="true"> / </span>
+        <span aria-current="page">{d.nombre}</span>
+      </nav>
+      <h1 class="hero-nombre">{d.nombre}</h1>
+      <div class="hero-meta">
+        <span class="pill">{d.barrio}</span>
+        <span class="pill pill--yellow">{d.precio_rango}</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="detail-body container">
+    <div class="detail-grid">
+      <!-- Main content -->
+      <main class="detail-main">
+        <!-- Rating general -->
+        <section class="rating-general-section" aria-label="Rating general">
+          <RatingDisplay rating={d.rating_general} size="lg" client:load />
+        </section>
+
+        <!-- Ratings individuales -->
+        <section class="ratings-individual" aria-label="Ratings por categoría">
+          <h2 class="section-title">Desglose</h2>
+          <div class="ratings-grid">
+            {ratings.map((r) => (
+              <div class="rating-item">
+                <div class="rating-item-header">
+                  <span class="rating-item-icon" aria-hidden="true">{r.icon}</span>
+                  <span class="rating-item-label">{r.label}</span>
+                  <span class="rating-item-value">{r.value}</span>
+                </div>
+                <div class="rating-bar-track" role="progressbar" aria-valuenow={r.value} aria-valuemin={0} aria-valuemax={10} aria-label={`${r.label}: ${r.value} de 10`}>
+                  <div
+                    class="rating-bar-fill"
+                    style={`--target-width: ${r.value * 10}%`}
+                  ></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <!-- Hamburguesa estrella -->
+        <section class="estrella-section" aria-label="Hamburguesa estrella">
+          <h2 class="section-title">La estrella</h2>
+          <p class="estrella-text">
+            <span aria-hidden="true">★ </span>{d.hamburguesa_estrella}
+          </p>
+        </section>
+
+        <!-- Reseña -->
+        <section class="resena-section" aria-label="Reseña completa">
+          <h2 class="section-title">La reseña</h2>
+          <div class="prose">
+            <Content />
+          </div>
+        </section>
+
+        <!-- Galería -->
+        {d.fotos_galeria && d.fotos_galeria.length > 0 && (
+          <section class="galeria-section" aria-label="Galería de fotos">
+            <h2 class="section-title">Galería</h2>
+            <div class="galeria-grid">
+              {d.fotos_galeria.map((foto, i) => (
+                <img
+                  src={foto}
+                  alt={`Foto ${i + 1} de ${d.nombre}`}
+                  width="600"
+                  height="450"
+                  class="galeria-img"
+                  loading="lazy"
+                  decoding="async"
+                />
+              ))}
+            </div>
+          </section>
+        )}
+      </main>
+
+      <!-- Sidebar -->
+      <aside class="detail-sidebar" aria-label="Información del local">
+        <div class="sidebar-card">
+          <h3 class="sidebar-title">Info</h3>
+
+          <div class="info-item">
+            <span class="info-label" aria-hidden="true">📍</span>
+            <span>{d.direccion}</span>
+          </div>
+
+          <div class="info-item">
+            <span class="info-label" aria-hidden="true">📅</span>
+            <span>
+              Visitado el {d.fecha_visita.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
+            </span>
+          </div>
+
+          {d.web && (
+            <div class="info-item">
+              <span class="info-label" aria-hidden="true">🌐</span>
+              <a href={d.web} target="_blank" rel="noopener noreferrer" class="info-link">
+                Web oficial
+              </a>
+            </div>
+          )}
+
+          {d.instagram && (
+            <div class="info-item">
+              <span class="info-label" aria-hidden="true">📸</span>
+              <span>{d.instagram}</span>
+            </div>
+          )}
+
+          {d.tags && d.tags.length > 0 && (
+            <div class="sidebar-tags">
+              <p class="sidebar-tags-label">Tags</p>
+              <div class="tags-list">
+                {d.tags.map((tag) => (
+                  <span class="pill pill--muted">{tag}</span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <a href="/" class="back-link" aria-label="Volver al ranking de hamburgueserías">
+          ← Volver al ranking
+        </a>
+      </aside>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  // Animate progress bars with IntersectionObserver
+  const bars = document.querySelectorAll<HTMLElement>('.rating-bar-fill');
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          (entry.target as HTMLElement).classList.add('animate');
+          observer.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.3 }
+  );
+
+  bars.forEach((bar) => observer.observe(bar));
+</script>
+
+<style>
+  /* ─── Hero ─── */
+  .detail-hero {
+    position: relative;
+    height: 60vh;
+    min-height: 360px;
+    overflow: hidden;
+    border-bottom: var(--border-width-thick) solid var(--color-accent);
+  }
+
+  .hero-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .hero-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8rem;
+    background: var(--color-border);
+  }
+
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(26,10,0,0.95) 0%, rgba(26,10,0,0.4) 50%, transparent 100%);
+  }
+
+  /* Big backdrop rating number */
+  .hero-rating-backdrop {
+    position: absolute;
+    top: 0;
+    right: -0.1em;
+    font-family: var(--font-display);
+    font-size: clamp(8rem, 25vw, 22rem);
+    line-height: 0.85;
+    color: var(--color-accent);
+    opacity: 0.12;
+    letter-spacing: -0.02em;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .hero-text {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    padding-bottom: var(--space-xl);
+    width: 100%;
+  }
+
+  .breadcrumb {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    letter-spacing: 0.05em;
+    margin-bottom: var(--space-sm);
+  }
+
+  .breadcrumb a {
+    color: var(--color-accent);
+    transition: color var(--transition-fast);
+  }
+  .breadcrumb a:hover { color: var(--color-accent-alt); }
+
+  .hero-nombre {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 7vw, 6rem);
+    line-height: 0.95;
+    color: var(--color-text);
+    margin-bottom: var(--space-md);
+    letter-spacing: 0.02em;
+  }
+
+  .hero-meta {
+    display: flex;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+  }
+
+  /* ─── Body ─── */
+  .detail-body {
+    padding-block: var(--space-3xl);
+  }
+
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: var(--space-3xl);
+    align-items: start;
+  }
+
+  /* ─── Main ─── */
+  .detail-main {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xl);
+  }
+
+  .section-title {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    color: var(--color-text);
+    letter-spacing: 0.03em;
+    margin-bottom: var(--space-md);
+  }
+
+  .section-title::after {
+    content: '.';
+    color: var(--color-accent);
+  }
+
+  /* Rating general */
+  .rating-general-section {
+    padding: var(--space-xl);
+    border: var(--border-width-thick) solid var(--color-accent);
+    background: rgba(255, 60, 0, 0.04);
+  }
+
+  /* Individual ratings */
+  .ratings-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .rating-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  .rating-item-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .rating-item-icon {
+    font-size: 1.1rem;
+  }
+
+  .rating-item-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    flex: 1;
+  }
+
+  .rating-item-value {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    color: var(--color-accent);
+    line-height: 1;
+  }
+
+  /* Progress bar */
+  .rating-bar-track {
+    height: 6px;
+    background: var(--color-border);
+    overflow: hidden;
+  }
+
+  .rating-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--color-accent);
+    transition: none;
+  }
+
+  .rating-bar-fill.animate {
+    animation: barFill 800ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  }
+
+  @keyframes barFill {
+    from { width: 0%; }
+    to { width: var(--target-width); }
+  }
+
+  /* Estrella */
+  .estrella-text {
+    font-size: 1.1rem;
+    color: var(--color-text);
+    font-style: italic;
+    border-left: var(--border-width-thick) solid var(--color-accent-alt);
+    padding-left: var(--space-md);
+    line-height: 1.5;
+  }
+
+  .estrella-text span {
+    color: var(--color-accent-alt);
+    font-style: normal;
+  }
+
+  /* Prose / reseña */
+  .prose {
+    color: var(--color-text);
+    font-size: 1rem;
+    line-height: 1.8;
+    max-width: 68ch;
+  }
+
+  .prose p {
+    margin-bottom: var(--space-md);
+  }
+
+  .prose p:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Galería */
+  .galeria-grid {
+    columns: 2;
+    gap: var(--space-sm);
+  }
+
+  .galeria-img {
+    width: 100%;
+    margin-bottom: var(--space-sm);
+    border: var(--border-width) solid var(--color-border);
+    transition: border-color var(--transition-fast);
+  }
+
+  .galeria-img:hover {
+    border-color: var(--color-accent);
+  }
+
+  /* ─── Sidebar ─── */
+  .detail-sidebar {
+    position: sticky;
+    top: 80px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+  }
+
+  .sidebar-card {
+    border: var(--border-width) solid var(--color-border);
+    padding: var(--space-lg);
+    background: var(--color-bg-card);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .sidebar-title {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    color: var(--color-accent);
+    letter-spacing: 0.05em;
+    padding-bottom: var(--space-sm);
+    border-bottom: var(--border-width) solid var(--color-border);
+  }
+
+  .info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    font-size: 0.875rem;
+    color: var(--color-text);
+    line-height: 1.5;
+  }
+
+  .info-label {
+    flex-shrink: 0;
+    width: 1.4rem;
+  }
+
+  .info-link {
+    color: var(--color-accent);
+    border-bottom: 1px solid var(--color-accent);
+    transition: color var(--transition-fast);
+  }
+
+  .info-link:hover {
+    color: var(--color-accent-alt);
+    border-bottom-color: var(--color-accent-alt);
+  }
+
+  .sidebar-tags {
+    border-top: 1px solid var(--color-border);
+    padding-top: var(--space-md);
+  }
+
+  .sidebar-tags-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-sm);
+  }
+
+  .tags-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--color-text-muted);
+    border: var(--border-width) solid var(--color-border);
+    padding: 8px 16px;
+    transition: all var(--transition-fast);
+    text-transform: uppercase;
+  }
+
+  .back-link:hover {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 1024px) {
+    .detail-grid {
+      grid-template-columns: 1fr;
+    }
+    .detail-sidebar {
+      position: static;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .galeria-grid {
+      columns: 1;
+    }
+    .hero-rating-backdrop {
+      display: none;
+    }
+  }
+</style>

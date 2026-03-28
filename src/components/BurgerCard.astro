@@ -1,0 +1,72 @@
+---
+import styles from './BurgerCard.module.css';
+
+interface Props {
+  nombre: string;
+  slug: string;
+  foto_portada: string;
+  barrio: string;
+  precio_rango: string;
+  rating_general: number;
+  hamburguesa_estrella: string;
+  tags?: string[];
+}
+
+const {
+  nombre,
+  slug,
+  foto_portada,
+  barrio,
+  precio_rango,
+  rating_general,
+  hamburguesa_estrella,
+  tags = [],
+} = Astro.props;
+
+const hasImage = foto_portada && foto_portada !== '/images/burgers/placeholder.jpg';
+---
+
+<article
+  class={styles.card}
+  aria-label={`${nombre} — Rating ${rating_general} de 10`}
+>
+  <a
+    href={`/burger/${slug}`}
+    class={styles.link}
+    aria-label={`Ver detalle de ${nombre}`}
+    tabindex="0"
+  ></a>
+
+  <div class={styles.imageWrapper}>
+    {hasImage ? (
+      <img
+        src={foto_portada}
+        alt={`Foto de ${nombre}`}
+        width="480"
+        height="360"
+        class={styles.image}
+        loading="lazy"
+        decoding="async"
+      />
+    ) : (
+      <div class={styles.imagePlaceholder} aria-hidden="true">🍔</div>
+    )}
+    <div class={styles.ratingBadge} aria-hidden="true">
+      {rating_general.toFixed(1)}
+    </div>
+  </div>
+
+  <div class={styles.content}>
+    <h2 class={styles.nombre}>{nombre}</h2>
+
+    <div class={styles.metaRow}>
+      <span class="pill">{barrio}</span>
+      <span class="pill pill--yellow">{precio_rango}</span>
+      {tags.slice(0, 2).map((tag) => (
+        <span class="pill pill--muted">{tag}</span>
+      ))}
+    </div>
+
+    <p class={styles.estrella}>{hamburguesa_estrella}</p>
+  </div>
+</article>
