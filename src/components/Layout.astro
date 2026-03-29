@@ -27,6 +27,9 @@ const { title, description = 'Las mejores hamburguesas de Madrid, rankeadas sin 
     <meta property="og:title" content={`${title} — BurgerRank Madrid`} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
+
+    <!-- Netlify Identity Widget — necesario para el redirect de login del CMS -->
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
   </head>
   <body>
     <header class="site-header">
@@ -45,6 +48,19 @@ const { title, description = 'Las mejores hamburguesas de Madrid, rankeadas sin 
     <main>
       <slot />
     </main>
+
+    <script>
+      // Redirige al admin tras login con Netlify Identity
+      if (window.netlifyIdentity) {
+        window.netlifyIdentity.on('init', (user) => {
+          if (!user) {
+            window.netlifyIdentity.on('login', () => {
+              document.location.href = '/admin/';
+            });
+          }
+        });
+      }
+    </script>
 
     <footer class="site-footer">
       <div class="container footer-inner">

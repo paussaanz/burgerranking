@@ -3,7 +3,7 @@ backend:
   branch: main
 
 # Activa el backend local para desarrollo (requiere `npx decap-server` en otra terminal)
-local_backend: true
+# local_backend: true
 
 media_folder: public/images/burgers
 public_folder: /images/burgers
